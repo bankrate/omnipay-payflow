@@ -301,8 +301,6 @@ class AuthorizeRequest extends AbstractRequest
         if ($this->getCardReference()) {
             $data['ORIGID'] = $this->getCardReference();
         } else {
-            $this->validate('card');
-
             if ($this->getSecureTokenId() && !is_null($this->getCreateSecureToken())) {
                 $this->validate('securetokenid', 'createsecuretoken', 'silenttran', 'returnurl', 'errorurl');
 
@@ -323,15 +321,15 @@ class AuthorizeRequest extends AbstractRequest
                 $data['ACCT'] = $this->getCard()->getNumber();
                 $data['EXPDATE'] = $this->getCard()->getExpiryDate('my');
                 $data['CVV2'] = $this->getCard()->getCvv();
-            }
 
-            $data['BILLTOFIRSTNAME'] = $this->getCard()->getFirstName();
-            $data['BILLTOLASTNAME'] = $this->getCard()->getLastName();
-            $data['BILLTOSTREET'] = $this->getCard()->getAddress1();
-            $data['BILLTOCITY'] = $this->getCard()->getCity();
-            $data['BILLTOSTATE'] = $this->getCard()->getState();
-            $data['BILLTOZIP'] = $this->getCard()->getPostcode();
-            $data['BILLTOCOUNTRY'] = $this->getCard()->getCountry();
+                $data['BILLTOFIRSTNAME'] = $this->getCard()->getFirstName();
+                $data['BILLTOLASTNAME'] = $this->getCard()->getLastName();
+                $data['BILLTOSTREET'] = $this->getCard()->getAddress1();
+                $data['BILLTOCITY'] = $this->getCard()->getCity();
+                $data['BILLTOSTATE'] = $this->getCard()->getState();
+                $data['BILLTOZIP'] = $this->getCard()->getPostcode();
+                $data['BILLTOCOUNTRY'] = $this->getCard()->getCountry();
+            }
         }
 
         $data['TENDER'] = 'C';
