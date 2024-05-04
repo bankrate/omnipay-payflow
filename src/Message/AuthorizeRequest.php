@@ -47,6 +47,16 @@ use Omnipay\Common\Message\AbstractRequest;
  *     echo "Transaction reference = " . $sale_id . "\n";
  * }
  * </code>
+ *
+ * ## Secure Token + Transparent Redirect Work Flow
+ *
+ * To avoid PCI compliance auditing on your server, you can use
+ * Payflow's secure token and transparent redirect. The work flow
+ * for authorization is similar to a sale with a divided data flow
+ * for the card and non-card data:
+ *
+ * @see https://developer.paypal.com/docs/classic/payflow/integration-guide/#pci-compliance-without-hosted-pages---transparent-redirect
+ *
  */
 class AuthorizeRequest extends AbstractRequest
 {
@@ -198,6 +208,56 @@ class AuthorizeRequest extends AbstractRequest
         return $this->getParameter('ponum');
     }
 
+    public function getSecureTokenId()
+    {
+        return $this->getParameter('securetokenid');
+    }
+
+    public function setSecureTokenId($value)
+    {
+        return $this->setParameter('securetokenid', $value);
+    }
+
+    public function getCreateSecureToken()
+    {
+        return $this->getParameter('createsecuretoken');
+    }
+
+    public function setCreateSecureToken($value)
+    {
+        return $this->setParameter('createsecuretoken', $value);
+    }
+
+    public function getSilentTran()
+    {
+        return $this->getParameter('silenttran');
+    }
+
+    public function setSilentTran($value)
+    {
+        return $this->setParameter('silenttran', $value);
+    }
+
+    public function getReturnUrl()
+    {
+        return $this->getParameter('returnurl');
+    }
+
+    public function setReturnUrl($value)
+    {
+        return $this->setParameter('returnurl', $value);
+    }
+
+    public function getErrorUrl()
+    {
+        return $this->getParameter('errorurl');
+    }
+
+    public function setErrorUrl($value)
+    {
+        return $this->setParameter('errorurl', $value);
+    }
+
     /**
      * @deprecated
      */
@@ -237,25 +297,42 @@ class AuthorizeRequest extends AbstractRequest
         $this->validate('amount');
         $data = $this->getBaseData();
 
+        /* what if we're wanting a secure ref? */
         if ($this->getCardReference()) {
             $data['ORIGID'] = $this->getCardReference();
             if ($this->getCard()) {
                 $data['CVV2'] = $this->getCard()->getCvv();
             }
         } else {
-            $this->validate('card');
-            $this->getCard()->validate();
+            if ($this->getSecureTokenId() && !is_null($this->getCreateSecureToken())) {
+                $this->validate('securetokenid', 'createsecuretoken', 'silenttran', 'returnurl', 'errorurl');
 
-            $data['ACCT'] = $this->getCard()->getNumber();
-            $data['EXPDATE'] = $this->getCard()->getExpiryDate('my');
-            $data['CVV2'] = $this->getCard()->getCvv();
-            $data['BILLTOFIRSTNAME'] = $this->getCard()->getFirstName();
-            $data['BILLTOLASTNAME'] = $this->getCard()->getLastName();
-            $data['BILLTOSTREET'] = $this->getCard()->getAddress1();
-            $data['BILLTOCITY'] = $this->getCard()->getCity();
-            $data['BILLTOSTATE'] = $this->getCard()->getState();
-            $data['BILLTOZIP'] = $this->getCard()->getPostcode();
-            $data['BILLTOCOUNTRY'] = $this->getCard()->getCountry();
+                $data['SECURETOKENID'] = $this->getSecureTokenId();
+                $data['CREATESECURETOKEN'] = $this->getCreateSecureToken() ? 'Y' : 'N';
+                $data['SILENTTRAN'] = $this->getSilentTran() ? 'TRUE' : 'FALSE';
+
+                if ($this->getReturnUrl()) {
+                    $data['RETURNURL'] = $this->getReturnUrl();
+                }
+
+                if ($this->getErrorUrl()) {
+                    $data['ERRORURL'] = $this->getErrorUrl();
+                }
+            } else {
+                $this->validate('card');
+                $this->getCard()->validate();
+
+                $data['ACCT'] = $this->getCard()->getNumber();
+                $data['EXPDATE'] = $this->getCard()->getExpiryDate('my');
+                $data['CVV2'] = $this->getCard()->getCvv();
+                $data['BILLTOFIRSTNAME'] = $this->getCard()->getFirstName();
+                $data['BILLTOLASTNAME'] = $this->getCard()->getLastName();
+                $data['BILLTOSTREET'] = $this->getCard()->getAddress1();
+                $data['BILLTOCITY'] = $this->getCard()->getCity();
+                $data['BILLTOSTATE'] = $this->getCard()->getState();
+                $data['BILLTOZIP'] = $this->getCard()->getPostcode();
+                $data['BILLTOCOUNTRY'] = $this->getCard()->getCountry();
+            }
         }
 
         $data['TENDER'] = 'C';
