@@ -376,7 +376,7 @@ class AuthorizeRequest extends AbstractRequest
     {
         $output = array();
         foreach ($data as $key => $value) {
-            $output[] = $key.'['.strlen($value).']='.$value;
+            $output[] = $key.'['.strlen((string) $value).']='.$value;
         }
 
         return implode('&', $output);
