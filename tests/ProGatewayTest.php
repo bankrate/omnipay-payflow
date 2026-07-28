@@ -20,7 +20,7 @@ class ProGatewayTest extends GatewayTestCase
                 'lastName' => 'User',
                 'number' => '4111111111111111',
                 'expiryMonth' => '12',
-                'expiryYear' => '2020',
+                'expiryYear' => (string) ((int) date('Y') + 1),
                 'cvv' => '123',
             )),
         );
