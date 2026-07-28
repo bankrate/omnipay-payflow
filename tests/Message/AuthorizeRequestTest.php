@@ -61,6 +61,30 @@ class AuthorizeRequestTest extends TestCase
         $this->assertSame('abcdefghijklmnopqrstuvwxy', $data['PONUM']);
     }
 
+    public function testGetSecureTokenData()
+    {
+        $request = new AuthorizeRequest($this->getHttpClient(), $this->getHttpRequest());
+        $request->initialize(
+            array(
+                'amount' => '1.00',
+                'secureTokenId' => 'secure-token-id',
+                'createSecureToken' => true,
+                'silentTran' => true,
+                'returnUrl' => 'https://example.com/return',
+                'errorUrl' => 'https://example.com/error',
+            )
+        );
+
+        $data = $request->getData();
+
+        $this->assertSame('secure-token-id', $data['SECURETOKENID']);
+        $this->assertSame('Y', $data['CREATESECURETOKEN']);
+        $this->assertSame('TRUE', $data['SILENTTRAN']);
+        $this->assertSame('https://example.com/return', $data['RETURNURL']);
+        $this->assertSame('https://example.com/error', $data['ERRORURL']);
+        $this->assertArrayNotHasKey('ACCT', $data);
+    }
+
     public function testEncodeData()
     {
         $data = array(
