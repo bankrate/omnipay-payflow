@@ -1,0 +1,6 @@
+# Supply is the default owner for this repository.
+* @bankrate/supply
+
+# Permit Platform Engineering to review Terraform and GitHub configuration.
+*.tf @bankrate/supply @bankrate/platform
+/.github/ @bankrate/supply @bankrate/platform
